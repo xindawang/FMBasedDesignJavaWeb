@@ -23,6 +23,9 @@ public interface DataMapper {
     @Select("select * from user")
     List<UserEntity> getAllUsers();
 
+    @Select("select * from device_info")
+    List<DeviceEntity> getAllDevicesInfo();
+
     @Insert("insert into device_info set device_name=#{device_name}")
     @Options(useGeneratedKeys=true, keyProperty="device_id")
     Integer insertDevice(DeviceEntity deviceEntity);
