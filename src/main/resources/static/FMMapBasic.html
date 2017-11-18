@@ -10,10 +10,9 @@
 </head>
 <body>
 <div id="fengMap"></div>
-<!--距离时间显示-->
 
 <!--操作按钮-->
-<button class="btn btn-default operating btn-primary" id="btn1">隐藏放大缩小控件</button>
+<button class="btn btn-default operating btn-primary" id="refreshLocation">刷新位置</button>
 
 <!--距离时间显示-->
 <div id="description"></div>
@@ -27,26 +26,10 @@
 
     //定义全局map变量
     var map;
-    var zoomVisible = true;
+    var layer;
     var fmapID = 'iotlab';
 
     window.onload = function () {
-        //放大、缩小控件配置
-        var ctlOpt1 = new fengmap.controlOptions({
-            //设置显示的位置为左上角
-            position: fengmap.controlPositon.LEFT_TOP,
-            //位置x,y的偏移量
-            offset: {
-                x: 20,
-                y: 60
-            },
-            scaleLevelcallback: function(level, result) {
-                carInfo(result);
-                /*当前级别：map.mapScaleLevel
-                 最小级别：map._minMapScaleLevel
-                 最大级别：map._maxMapScaleLevel*/
-            }
-        });
 
         map = new fengmap.FMMap({
             //渲染dom
@@ -57,115 +40,69 @@
             mapThemeURL: './data/theme',
             //设置主题
             defaultThemeName: 'iotlab',
-            // 默认比例尺级别设置为20级
-            defaultMapScaleLevel: 20,
+
+            // [200, 4000]， 自定义比例尺范围，单位（厘米）
+            mapScaleRange: [1, 4000],
+            // 默认自定义比例尺为 1：1000（厘米）
+            defaultMapScale: 110,
+
+//            //比例尺级别范围， 16级到23级
+//            mapScaleLevelRange: [16, 23],
+//            // 默认比例尺级别设置为20级
+//
+//            defaultMapScaleLevel: 20,
             //开发者申请应用下web服务的key
             key: '34a37f702ce7100a9043b5ef4d583500',
             //开发者申请应用名称
             appName: '蜂鸟室内地图测试',
         });
 
-        map.on('loadComplete',function() {
-            //放大、缩小控件
-            var zoomControl = new fengmap.zoomControl(map, ctlOpt1);
 
-            //显示放大缩小控件
-            gui.showZoom(zoomVisible);
-        });
-
-        var oBtn = document.querySelector('#btn1');
+        var refreshLocation = document.querySelector('#refreshLocation');
         //放大缩小控件显示隐藏事件
-        oBtn.onclick = function() {
-            zoomVisible = !zoomVisible;
-            //设置放大缩小控件显示隐藏
-            gui.showZoom(zoomVisible);
-            if (!zoomVisible) {
-                this.innerHTML = "显示放大缩小控件";
-                this.classList.remove('btn-primary');
-            } else {
-                this.innerHTML = "隐藏放大缩小控件";
-                this.classList.add('btn-primary');
-            }
-        };
-
-
-        //地图点击事件
-        map.on('mapClickNode', function (event) {
-            //获取坐标信息
-            var eventInfo = event.eventInfo.coord;
-
-            //获取焦点层
+        refreshLocation.onclick = function () {
+            var groupLayer = map.getFMGroup(1);
             var currentGid = map.focusGroupID;
-
-            //获取x、y坐标
-            if (eventInfo) { //pc端
-                var coord = {
-//                        x: event.eventInfo.coord.x,
-//                        y: event.eventInfo.coord.y,
-                    x: 12735847,
-                    y: 3569542,
-                }
-            } else { //移动端
-                var coord = {
-                    x: event.mapCoord.x,
-                    y: event.mapCoord.y,
-                }
-            }
-
-            //获取鼠标点击的坐标
-            var domEvent = event.eventInfo.domEvent;
-            var _x, _y;
-
-            if (domEvent instanceof MouseEvent) {
-                _x = domEvent.clientX;
-                _y = domEvent.clientY;
-            } else {
-                _x = domEvent.changedTouches[0].clientX;
-                _y = domEvent.changedTouches[0].clientY;
-            }
-
-//                //如果点击的是空白处
-//                if (!event.nodeType) {
-//                    showPrompt(currentGid, {
-//                        x: _x,
-//                        y: _y,
-//                        z: map.getGroupHeight(currentGid) + map.layerLocalHeight
-//                    });
-//                    return;
-//                }
-//                showPrompt(currentGid, {
-//                    x: _x,
-//                    y: _y,
-//                    z: map.getGroupHeight(currentGid) + map.layerLocalHeight
-//                });
-
-            //清除已存在图层
-            var layer = map.getLayerByAlias(currentGid, 'imageMarker');
+            layer = map.getLayerByAlias(currentGid, 'imageMarker');
             if (layer) {
                 //自杀式删除
                 layer.dispose();
             }
-
-            //添加Marker
-            addMarker(currentGid, coord);
-        });
-
-        //在点击的位置添加图片标注
-        function addMarker(gid, coord) {
-            var group = map.getFMGroup(gid);
-
-            //返回当前层中第一个imageMarkerLayer,如果没有，则自动创建
-            var layer = group.getOrCreateLayer('imageMarker');
-
-            var im = new fengmap.FMImageMarker({
-                x: coord.x,
-                y: coord.y,
-                url: 'image/blueImageMarker.png',
-                height: 2,
-                size: 32,
+            layer = new fengmap.FMImageMarkerLayer();   //实例化TextMarkerLayer
+            groupLayer.addLayer(layer);    //添加文本标注层到模型层。否则地图上不会显示
+            $.ajax({
+                type: "GET",
+                url: "/userLoc",
+                dataType: "json",
+                success: function(data){
+                    console.log(data)
+                    for (var i in data){
+                        refreshUsersLocation(data[i].x,data[i] .y);
+                    }
+                },
+                error:function (data) {
+                  console.log(data)
+                }
             });
-            layer.addMarker(im);
         };
+
+        function refreshUsersLocation(x,y){
+            //图标标注对象，默认位置为该楼层中心点
+            var im = new fengmap.FMImageMarker({
+                x: x,
+                y: y,
+                url: 'image/blueImageMarker.png',        //设置图片路径
+                height: 0.4,
+                size: 32,                               //设置图片显示尺寸
+                //图片标注渲染完成的回调方法
+                callback: function () {
+                    // 在图片载入完成后，设置 "一直可见",即显示优先级最高
+                    // 如相同位置有其他标注，则此标注在前。
+                    im.alwaysShow();
+                }
+            });
+            layer.addMarker(im);  //文本标注层添加文本Marker
+        }
 
         //打开Fengmap服务器的地图数据和主题
         map.openMapById(fmapID, function (error) {
