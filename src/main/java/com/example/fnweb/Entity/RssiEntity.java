@@ -16,6 +16,9 @@ public class RssiEntity {
     private Float ap8;
     private Float ap9;
     private String point;
+    private Double knnResult;
+    private Double x;
+    private Double y;
 
     public Integer getId() {
         return id;
@@ -105,12 +108,35 @@ public class RssiEntity {
         this.ap9 = ap9;
     }
 
-
     public String getPoint() {
         return point;
     }
 
     public void setPoint(String point) {
         this.point = point;
+    }
+
+    public Double getKnnResult() {
+        return knnResult;
+    }
+
+    public void setKnnResult(Double knnResult) {
+        this.knnResult = knnResult;
+    }
+
+    public Double getX() {
+        return x;
+    }
+
+    public void setX(Double x) {
+        this.x = x;
+    }
+
+    public Double getY() {
+        return y;
+    }
+
+    public void setY(Double y) {
+        this.y = y;
     }
 }
