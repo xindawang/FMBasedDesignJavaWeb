@@ -1,8 +1,11 @@
 package com.example.fnweb.Service;
 
 import com.example.fnweb.Entity.DeviceEntity;
+import com.example.fnweb.Entity.PointLocEntity;
 import com.example.fnweb.Entity.RssiEntity;
-import com.example.fnweb.Mapper.DataMapper;
+import com.example.fnweb.Mapper.DeviceMapper;
+import com.example.fnweb.Mapper.PointLocMapper;
+import com.example.fnweb.Mapper.RssiMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,24 +18,56 @@ import java.util.List;
 public class KNNService {
 
     @Autowired
-    private DataMapper dataMapper;
+    private DeviceMapper dataMapper;
 
-    public void getLocByKnn(RssiEntity rssiEntity,DeviceEntity deviceEntity, int k){
+    @Autowired
+    private RssiMapper rssiMapper;
+
+    @Autowired
+    private PointLocMapper pointLocMapper;
+
+    public RssiEntity getLocByKnn(RssiEntity rssiEntity,DeviceEntity deviceEntity, int k){
+
+        //appoint the number of minimum AP point
         RssiEntity[] rssiEntities = getMinK(rssiEntity,deviceEntity,5);
+        PointLocEntity[] pointLocEntities = getRelPointInfo(rssiEntities,k);
         double sum = 0, x=0, y=0;
-        for (int i = 0; i <rssiEntities.length ; i++) sum += 1/rssiEntities[i].getKnnResult();
+
+        //calculate the sum of k rssi
         for (int i = 0; i <rssiEntities.length ; i++) {
-            x += rssiEntities[i].getKnnResult()/sum*rssiEntities[i].getX();
-            y += rssiEntities[i].getKnnResult()/sum*rssiEntities[i].getY();
+            sum += 1/rssiEntities[i].getKnnResult();
         }
-        rssiEntity.setX(x);
-        rssiEntity.setY(y);
-        System.out.println();
+
+        //get ratio and location info of each point and add up for the result
+        for (int i = 0; i <rssiEntities.length ; i++) {
+            double ratio = 1/rssiEntities[i].getKnnResult()/sum;
+            int point_x = pointLocEntities[i].getX();
+            int point_y = pointLocEntities[i].getY();
+            x += ratio * point_x;
+            y += ratio * point_y;
+        }
+
+        //convert the format of location info according to how it store into database
+        double result_x = x/Math.pow(10,7) + 12735839;
+        double result_y = y/Math.pow(10,7) + 3569534;
+        rssiEntity.setX(result_x);
+        rssiEntity.setY(result_y);
+        return rssiEntity;
+    }
+
+    //get all the point location information from database
+    private PointLocEntity[] getRelPointInfo(RssiEntity[] rssiEntities,int k) {
+        PointLocEntity[] pointLocEntity = new PointLocEntity[k];
+        int i = 0 ;
+        for (RssiEntity rssiEntity :rssiEntities) {
+            pointLocEntity[i++]=pointLocMapper.getPointLocInfoByName(rssiEntity.getPoint());
+        }
+        return pointLocEntity;
     }
 
     public RssiEntity[] getMinK(RssiEntity rssiEntity,DeviceEntity deviceEntity, int k){
         //get rssi info from database according to the given device_id
-        List<RssiEntity> rssiList = dataMapper.getRssiInfo(deviceEntity);
+        List<RssiEntity> rssiList = rssiMapper.getRssiInfoByDeviceId(deviceEntity);
 
         //initialize big top heap
         int curNum = 0;
@@ -61,6 +96,7 @@ public class KNNService {
         return minK;
     }
 
+    //similar to heap rank
     private RssiEntity[] maxHeapify(RssiEntity[] rssiEntities,int index,int len){
         int li = (index << 1) + 1; // 左子节点索引
         int ri = li + 1;           // 右子节点索引

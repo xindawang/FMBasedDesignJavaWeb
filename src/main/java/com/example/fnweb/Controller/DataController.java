@@ -1,7 +1,8 @@
 package com.example.fnweb.Controller;
 
 import com.example.fnweb.Entity.DeviceEntity;
-import com.example.fnweb.Mapper.DataMapper;
+import com.example.fnweb.Mapper.DeviceMapper;
+import com.example.fnweb.Mapper.PointLocMapper;
 import com.example.fnweb.Service.DataStoreService;
 import com.example.fnweb.tools.JsonTool;
 import com.github.pagehelper.Page;
@@ -23,7 +24,10 @@ import java.util.Map;
 public class DataController {
 
     @Autowired
-    private DataMapper dataMapper;
+    private DeviceMapper deviceMapper;
+
+    @Autowired
+    private PointLocMapper pointLocMapper;
 
     @Autowired
     private DataStoreService dataStoreService;
@@ -33,30 +37,18 @@ public class DataController {
         return "iotMap";
     }
 
-    @ResponseBody
-    @RequestMapping(value = "/user",method = RequestMethod.GET)
-    public String getAllUsername(){
-        return JsonTool.listToJson(dataMapper.getAllUsers());
-    }
-
-    @ResponseBody
-    @RequestMapping(value = "/user/loc",method = RequestMethod.GET)
-    public String getAllUserLoc(){
-        return JsonTool.listToJson(dataMapper.getAllLocations());
-    }
 
     @ResponseBody
     @RequestMapping(value = "/data/device",method = RequestMethod.GET)
     public String getDevicesInfo(int pageSize, int page) {
         PageHelper.startPage(page, pageSize);
-        List<DeviceEntity> list = dataMapper.getAllDevicesInfo();
+        List<DeviceEntity> list = deviceMapper.getAllDevicesInfo();
         long total = ((Page<DeviceEntity>) list).getTotal();
         Map<String, Object> map = new HashMap<>();
         map.put("list", list);
         map.put("total", total);
         return JsonTool.objectToJson(map);
     }
-
 
     @ResponseBody
     @RequestMapping(value = "/data/store",method = RequestMethod.GET)
@@ -65,7 +57,7 @@ public class DataController {
 
         //step 2: import data from txt into database
         dataStoreService.insertData();
-        return JsonTool.listToJson(dataMapper.getAllLocations());
+        return null;
     }
 
 }

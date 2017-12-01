@@ -6,7 +6,8 @@ package com.example.fnweb.Service;
 
 import com.example.fnweb.Entity.DeviceEntity;
 import com.example.fnweb.Entity.RssiEntity;
-import com.example.fnweb.Mapper.DataMapper;
+import com.example.fnweb.Mapper.DeviceMapper;
+import com.example.fnweb.Mapper.RssiMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,14 +16,16 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
 
 @Service
 public class DataStoreService {
 
     @Autowired
-    private DataMapper dataMapper;
+    private DeviceMapper deviceMapper;
+
+    @Autowired
+    private RssiMapper rssiMapper;
+
     private static String path = "E:\\IndoorLocation\\FengNiao\\FMWeb\\src\\main\\resources\\static\\data\\mi.txt";
 
     @Transactional
@@ -31,7 +34,7 @@ public class DataStoreService {
 
         //step 1: insert into device_info table
         deviceEntity.setDevice_name("mi");
-        dataMapper.insertDevice(deviceEntity);
+        deviceMapper.insertDevice(deviceEntity);
 
         //step 2: set entity and insert into rssi_info table
         return setRssiEntityAndInsert(deviceEntity.getDevice_id());
@@ -61,10 +64,9 @@ public class DataStoreService {
                         case "abc7":rssiEntity.setAp7(Float.valueOf(eachRssi[1].trim()));break;
                         case "abc8":rssiEntity.setAp8(Float.valueOf(eachRssi[1].trim()));break;
                         case "abc9":rssiEntity.setAp9(Float.valueOf(eachRssi[1].trim()));break;
-
                     }
                 }
-                if (!dataMapper.insertRssi(rssiEntity)) return false;
+                if (!rssiMapper.insertRssi(rssiEntity)) return false;
                 str=br.readLine();
             }
 

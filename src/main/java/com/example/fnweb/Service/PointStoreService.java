@@ -1,8 +1,8 @@
 package com.example.fnweb.Service;
 
 import com.example.fnweb.Entity.PointLocEntity;
-import com.example.fnweb.Entity.RssiEntity;
-import com.example.fnweb.Mapper.DataMapper;
+import com.example.fnweb.Mapper.DeviceMapper;
+import com.example.fnweb.Mapper.PointLocMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,7 +11,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.text.DecimalFormat;
-import java.text.NumberFormat;
 
 /**
  * Created by ACER on 2017/11/22.
@@ -20,7 +19,10 @@ import java.text.NumberFormat;
 public class PointStoreService {
 
     @Autowired
-    private DataMapper dataMapper;
+    private DeviceMapper dataMapper;
+
+    @Autowired
+    private PointLocMapper pointLocMapper;
 
     private String path = "E:\\IndoorLocation\\FengNiao\\FMWeb\\src\\main\\resources\\static\\data\\point_loc.txt";
 
@@ -32,6 +34,8 @@ public class PointStoreService {
             while(str != null) {
                 PointLocEntity pointLocEntity = new PointLocEntity();
                 String [] eachPoint = str.split("\\s");
+
+                //store the point info which meet the requirement to the database after transformation
                 if (eachPoint.length==3) {
                     pointLocEntity.setPoint_name(eachPoint[0]);
                     DecimalFormat dcmFmt = new DecimalFormat("0.0000000");
@@ -39,7 +43,7 @@ public class PointStoreService {
                     double pointY = Double.valueOf(dcmFmt.format(Double.valueOf(eachPoint[2])-3569534))*Math.pow(10,7);
                     pointLocEntity.setX((int)pointX);
                     pointLocEntity.setY((int)pointY);
-                    if (!dataMapper.insertPointLoc(pointLocEntity)) return false;
+                    if (!pointLocMapper.insertPointLoc(pointLocEntity)) return false;
                 }
                 str=br.readLine();
             }

@@ -7,6 +7,7 @@ public class PointLocEntity {
     private String point_name;
     private Integer x;
     private Integer y;
+    private Double bayesResult;
 
     public String getPoint_name() {
         return point_name;
@@ -30,5 +31,13 @@ public class PointLocEntity {
 
     public void setY(Integer y) {
         this.y = y;
+    }
+
+    public Double getBayesResult() {
+        return bayesResult;
+    }
+
+    public void setBayesResult(Double bayesResults) {
+        this.bayesResult = bayesResults;
     }
 }
