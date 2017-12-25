@@ -5,7 +5,7 @@ package com.example.fnweb.Service;
  */
 
 import com.example.fnweb.Entity.DeviceEntity;
-import com.example.fnweb.Entity.RssiEntity;
+import com.example.fnweb.Entity.RpEntity;
 import com.example.fnweb.Mapper.DeviceMapper;
 import com.example.fnweb.Mapper.RssiMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +16,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashMap;
 
 @Service
 public class DataStoreService {
@@ -47,26 +48,36 @@ public class DataStoreService {
             BufferedReader br = new BufferedReader(reader);
             String str=br.readLine();
             while(str != null&& !str.contains("*")) {
-                RssiEntity rssiEntity = new RssiEntity();
-                rssiEntity.setDevice_id(deviceId);
-                rssiEntity.setPoint(str.trim());
+                RpEntity rpEntity = new RpEntity();
+                rpEntity.setDevice_id(deviceId);
+                rpEntity.setPoint(str.trim());
                 str=br.readLine();
                 String [] eachPoint = str.split(";");
+                HashMap<String, Float> apEntities = new HashMap<>();
                 for (int i = 0; i < eachPoint.length; i++) {
                     String [] eachRssi = eachPoint[i].split(",");
                     switch (eachRssi[0]){
-                        case "abc1":rssiEntity.setAp1(Float.valueOf(eachRssi[1].trim()));break;
-                        case "abc2":rssiEntity.setAp2(Float.valueOf(eachRssi[1].trim()));break;
-                        case "abc3":rssiEntity.setAp3(Float.valueOf(eachRssi[1].trim()));break;
-                        case "abc4":rssiEntity.setAp4(Float.valueOf(eachRssi[1].trim()));break;
-                        case "abc5":rssiEntity.setAp5(Float.valueOf(eachRssi[1].trim()));break;
-                        case "abc6":rssiEntity.setAp6(Float.valueOf(eachRssi[1].trim()));break;
-                        case "abc7":rssiEntity.setAp7(Float.valueOf(eachRssi[1].trim()));break;
-                        case "abc8":rssiEntity.setAp8(Float.valueOf(eachRssi[1].trim()));break;
-                        case "abc9":rssiEntity.setAp9(Float.valueOf(eachRssi[1].trim()));break;
+                        case "abc1":
+                            apEntities.put("ap1",Float.valueOf(eachRssi[1].trim()));break;
+                        case "abc2":
+                            apEntities.put("ap2",Float.valueOf(eachRssi[1].trim()));break;
+                        case "abc3":
+                            apEntities.put("ap3",Float.valueOf(eachRssi[1].trim()));break;
+                        case "abc4":
+                            apEntities.put("ap4",Float.valueOf(eachRssi[1].trim()));break;
+                        case "abc5":
+                            apEntities.put("ap5",Float.valueOf(eachRssi[1].trim()));break;
+                        case "abc6":
+                            apEntities.put("ap6",Float.valueOf(eachRssi[1].trim()));break;
+                        case "abc7":
+                            apEntities.put("ap7",Float.valueOf(eachRssi[1].trim()));break;
+                        case "abc8":
+                            apEntities.put("ap8",Float.valueOf(eachRssi[1].trim()));break;
+                        case "abc9":
+                            apEntities.put("ap9",Float.valueOf(eachRssi[1].trim()));break;
                     }
                 }
-                if (!rssiMapper.insertRssi(rssiEntity)) return false;
+                if (!rssiMapper.insertRssi(rpEntity)) return false;
                 str=br.readLine();
             }
 

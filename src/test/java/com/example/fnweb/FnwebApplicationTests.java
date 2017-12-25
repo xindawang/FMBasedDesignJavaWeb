@@ -1,7 +1,6 @@
 package com.example.fnweb;
 
-import com.example.fnweb.Entity.DeviceEntity;
-import com.example.fnweb.Entity.RssiEntity;
+import com.example.fnweb.Entity.RpEntity;
 import com.example.fnweb.Service.KNNService;
 import com.example.fnweb.Service.NaiveBayesService;
 import com.example.fnweb.Service.PointStoreService;
@@ -31,25 +30,17 @@ public class FnwebApplicationTests {
 
 	@Test
 	public void getRssiInfo(){
-		RssiEntity rssiEntity = new RssiEntity();
-		rssiEntity.setAp1(1f);
-		rssiEntity.setAp2(1f);
-		rssiEntity.setAp3(1f);
-		rssiEntity.setAp4(1f);
-		rssiEntity.setAp5(1f);
-		rssiEntity.setAp6(1f);
-		rssiEntity.setAp7(1f);
-		rssiEntity.setAp8(1f);
-		rssiEntity.setAp9(1f);
+		RpEntity rpEntity = new RpEntity();
 
-		naiveBayesService.getLocByBayes(rssiEntity);
+
+		naiveBayesService.getLocByBayes(rpEntity);
 //		DeviceEntity deviceEntity = new DeviceEntity();
 //		deviceEntity.setDevice_id(11);
-//		knnService.getLocByKnn(rssiEntity,deviceEntity,5);
+//		knnService.getLocByKnn(rpEntity,deviceEntity,5);
 	}
 
 	@Test
-	public void insertPointLoc(){
+	public void insertPointLoc2(){
 		pointStoreService.insertPointLoc();
 	}
 

@@ -24,7 +24,7 @@ public class PointStoreService {
     @Autowired
     private PointLocMapper pointLocMapper;
 
-    private String path = "E:\\IndoorLocation\\FengNiao\\FMWeb\\src\\main\\resources\\static\\data\\point_loc.txt";
+    private String path = "E:\\IndoorLocation\\FengNiao\\FMWeb\\src\\main\\resources\\static\\data\\point_loc2.txt";
 
     public boolean insertPointLoc(){
         try {
@@ -43,7 +43,7 @@ public class PointStoreService {
                     double pointY = Double.valueOf(dcmFmt.format(Double.valueOf(eachPoint[2])-3569534))*Math.pow(10,7);
                     pointLocEntity.setX((int)pointX);
                     pointLocEntity.setY((int)pointY);
-                    if (!pointLocMapper.insertPointLoc(pointLocEntity)) return false;
+                    if (!pointLocMapper.insertPointLoc2(pointLocEntity)) return false;
                 }
                 str=br.readLine();
             }

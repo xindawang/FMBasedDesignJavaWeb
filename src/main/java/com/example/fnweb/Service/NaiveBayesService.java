@@ -2,19 +2,15 @@ package com.example.fnweb.Service;
 
 import com.example.fnweb.Entity.BayesArgsEntity;
 import com.example.fnweb.Entity.PointLocEntity;
-import com.example.fnweb.Entity.RssiEntity;
+import com.example.fnweb.Entity.RpEntity;
 import com.example.fnweb.Mapper.BayesMapper;
-import com.example.fnweb.Mapper.DeviceMapper;
 import com.example.fnweb.Mapper.PointLocMapper;
 import com.example.fnweb.Mapper.RssiMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.PriorityQueue;
-import java.util.Queue;
+import java.util.*;
 
 import static java.lang.Math.E;
 
@@ -72,23 +68,14 @@ public class NaiveBayesService {
         return true;
     }
 
-    public  RssiEntity getLocByBayes(RssiEntity rssiEntity){
-        RssiEntity resultRssiEntity = new RssiEntity();
+    public RpEntity getLocByBayes(RpEntity rpEntity){
+        RpEntity resultRpEntity = new RpEntity();
 
         //initialize the input data
-        Float[] eachApRssiSrc = new Float[apAmount];
-        eachApRssiSrc[0] = rssiEntity.getAp1();
-        eachApRssiSrc[1] = rssiEntity.getAp2();
-        eachApRssiSrc[2] = rssiEntity.getAp3();
-        eachApRssiSrc[3] = rssiEntity.getAp4();
-        eachApRssiSrc[4] = rssiEntity.getAp5();
-        eachApRssiSrc[5] = rssiEntity.getAp6();
-        eachApRssiSrc[6] = rssiEntity.getAp7();
-        eachApRssiSrc[7] = rssiEntity.getAp8();
-        eachApRssiSrc[8] = rssiEntity.getAp9();
+        HashMap<String, Float> rpInfoSrc = rpEntity.getApEntities();
 
         //get ratio and location info of each point and add up for the result
-        PointLocEntity[] maxKEntities = getKPointsWithHighestProb(eachApRssiSrc);
+        PointLocEntity[] maxKEntities = getKPointsWithHighestProb(rpInfoSrc);
         double sum = 0,x=0,y=0;
         for (int i = 0; i < maxKEntities.length; i++){
             sum += maxKEntities[i].getBayesResult();
@@ -103,12 +90,12 @@ public class NaiveBayesService {
         //convert the format of location info according to how it store into database in knnService
         double result_x = x/Math.pow(10,7) + 12735839;
         double result_y = y/Math.pow(10,7) + 3569534;
-        resultRssiEntity.setX(result_x);
-        resultRssiEntity.setY(result_y);
-        return resultRssiEntity;
+        resultRpEntity.setX(result_x);
+        resultRpEntity.setY(result_y);
+        return resultRpEntity;
     }
 
-    private PointLocEntity[] getKPointsWithHighestProb(Float[] eachApRssiSrc){
+    private PointLocEntity[] getKPointsWithHighestProb(HashMap<String, Float> rpInfoSrc){
 
         //use the way of priority queue, which could be compared to the knn
         Comparator<PointLocEntity> cmp = new Comparator<PointLocEntity>() {
@@ -129,13 +116,14 @@ public class NaiveBayesService {
 
             //put the online data into Gauss formula with Gauss index of each ap
             for (int i = 1; i <= apAmount; i++) {
+                String apName = "ap"+i;
                 String avgName = "ap"+i+"_average";
                 String varName = "ap"+i+"_variance";
                 BayesArgsEntity eachAp = bayesMapper.getEachApArgs(avgName,varName,pointName);
                 if (eachAp.getApNameVar() == 0)
                     eachAp.setApNameVar(0.000001);
-                double thisApProb = 1/Math.sqrt(2*Math.PI*eachAp.getApNameVar())*Math.pow(E,-Math.pow(eachApRssiSrc[i-1] - eachAp.getApNameAvg(),2)/2*eachAp.getApNameVar());
-                eachPointProb *= thisApProb;
+//                double thisApProb = 1/Math.sqrt(2*Math.PI*eachAp.getApNameVar())*Math.pow(E,-Math.pow(eachApRssiSrc[i-1] - eachAp.getApNameAvg(),2)/2*eachAp.getApNameVar());
+//                eachPointProb *= thisApProb;
             }
             candidateLocEntity.setPoint_name(pointName);
             candidateLocEntity.setBayesResult(eachPointProb);
