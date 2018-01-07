@@ -7,6 +7,7 @@ import com.example.fnweb.Mapper.DeviceMapper;
 import com.example.fnweb.Mapper.PointLocMapper;
 import com.example.fnweb.Service.DataStoreService;
 import com.example.fnweb.Service.KNNService;
+import com.example.fnweb.Service.NaiveBayesService;
 import com.example.fnweb.tools.JsonTool;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;;
@@ -39,6 +40,9 @@ public class DataController {
 
     @Autowired
     private KNNService knnService;
+
+    @Autowired
+    private NaiveBayesService naiveBayesService;
 
     @RequestMapping(value = "/data",method = RequestMethod.GET)
     public String getDataSet(){
@@ -83,7 +87,15 @@ public class DataController {
         if (apEntity.getAbc8()!=null) apentities.put("abc8",Float.valueOf(apEntity.getAbc8()));
         if (apEntity.getAbc9()!=null) apentities.put("abc9",Float.valueOf(apEntity.getAbc9()));
         rpEntity.setApEntities(apentities);
-        knnService.getLocByKnn(rpEntity,null);
+        if (apEntity.getAlgorithm()!=null) {
+            if (apEntity.getAlgorithm().equals("knn")) {
+                knnService.getLocByKnn(rpEntity,null);
+            }else if (apEntity.getAlgorithm()=="bayes") {
+                naiveBayesService.getLocByBayes(rpEntity);
+            }
+        }else{
+            return null;
+        }
         return rpEntity.getLocString();
     }
 }

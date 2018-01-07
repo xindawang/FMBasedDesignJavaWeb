@@ -12,6 +12,8 @@ public class ApEntity {
     private String abc6;
     private String abc7;
     private String abc8;
+    private String abc9;
+    private String algorithm;
 
     public String getAbc1() {
         return abc1;
@@ -85,5 +87,11 @@ public class ApEntity {
         this.abc9 = abc9;
     }
 
-    private String abc9;
+    public String getAlgorithm() {
+        return algorithm;
+    }
+
+    public void setAlgorithm(String algorithm) {
+        this.algorithm = algorithm;
+    }
 }
